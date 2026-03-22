@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="si">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BAKMAHA - Map Tracker</title>
+    
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <link rel="stylesheet" href="https://unpkg.com/leaflet-control-geocoder/dist/Control.Geocoder.css" />
+
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Abhaya+Libre:wght@600&display=swap');
+
+        body {
+            font-family: 'Abhaya Libre', serif;
+            margin: 0;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            background: #fdf2f2;
+        }
+
+        /* Animated Traditional Liquid Background */
+        .bg-animate {
+            position: fixed;
+            width: 100vw;
+            height: 100vh;
+            z-index: -1;
+            background: linear-gradient(135deg, #ff9a9e 0%, #fecfef 100%);
+            overflow: hidden;
+        }
+
+        .liquid-shape {
+            position: absolute;
+            width: 500px;
+            height: 500px;
+            background: rgba(255, 165, 0, 0.3);
+            filter: blur(80px);
+            border-radius: 40% 60% 70% 30% / 40% 50% 60% 50%;
+            animation: flow 15s infinite alternate;
+        }
+
+        @keyframes flow {
+            from { transform: translate(-10%, -10%) rotate(0deg); }
+            to { transform: translate(20%, 20%) rotate(360deg); }
+        }
+
+        /* Liquid Glass Style */
+        .glass-panel {
+            background: rgba(255, 255, 255, 0.2);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+        }
+
+        #map {
+            height: calc(100vh - 120px);
+            width: 95%;
+            margin: 10px auto;
+            border-radius: 25px;
+            border: 4px solid rgba(255, 255, 255, 0.5);
+            z-index: 1;
+        }
+
+        /* Search & Controls Style */
+        .leaflet-control-geocoder {
+            border-radius: 10px !important;
+            margin-top: 15px !important;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="bg-animate">
+        <div class="liquid-shape" style="top: -10%; left: -5%;"></div>
+        <div class="liquid-shape" style="bottom: -10%; right: -5%; background: rgba(255, 69, 0, 0.2);"></div>
+    </div>
+
+    <div class="w-full flex justify-between items-center px-8 py-4">
+        <div class="glass-panel px-6 py-2 rounded-full">
+            <h1 class="text-3xl font-bold text-red-700 tracking-wider">BAKMAHA</h1>
+        </div>
+        <div class="glass-panel px-4 py-2 rounded-full text-sm font-bold text-gray-800">
+            සිතියම මත ක්ලික් කර Tag කරන්න
+        </div>
+    </div>
+
+    <div id="map"></div>
+
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script src="https://unpkg.com/leaflet-control-geocoder/dist/Control.Geocoder.js"></script>
+
+    <script>
+        // Initialize the map centered on Sri Lanka
+        var map = L.map('map').setView([7.8731, 80.7718], 8);
+
+        // Tile Layer (Clean modern look)
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: 'BAKMAHA'
+        }).addTo(map);
+
+        // Search Control (GPS/Location Search)
+        L.Control.geocoder({
+            defaultMarkGeocode: true,
+            placeholder: "ස්ථානය සොයන්න..."
+        }).addTo(map);
+
+        // Auto Locate User (GPS)
+        map.locate({setView: true, maxZoom: 14});
+
+        function onLocationFound(e) {
+            L.circle(e.latlng, e.accuracy).addTo(map);
+            L.marker(e.latlng).addTo(map).bindPopup("ඔබ මෙතැන සිටී").openPopup();
+        }
+        map.on('locationfound', onLocationFound);
+
+        // Function to Add & Remove Tags
+        map.on('click', function(e) {
+            var marker = L.marker(e.latlng).addTo(map);
+            
+            // Modern Popup with Remove button
+            var popupContent = document.createElement('div');
+            popupContent.innerHTML = `
+                <div class="p-2 text-center">
+                    <p class="font-bold mb-2">අලුත් අවුරුදු ස්ථානය</p>
+                    <button id="removeBtn" class="bg-red-500 text-white px-3 py-1 rounded-full text-xs hover:bg-red-700 transition">
+                        සලකුණ ඉවත් කරන්න
+                    </button>
+                </div>
+            `;
+
+            marker.bindPopup(popupContent).openPopup();
+
+            // Handle removal
+            popupContent.querySelector('#removeBtn').onclick = function() {
+                map.removeLayer(marker);
+            };
+        });
+
+    </script>
+</body>
+</html>
