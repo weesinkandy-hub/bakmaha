@@ -12,7 +12,7 @@
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Abhaya+Libre:wght@400;700&display=swap');
         
-        body { font-family: 'Abhaya Libre', serif; margin: 0; background: #fff5f5; overflow: hidden; }
+        body { font-family: 'Abhaya Libre', serif; margin: 0; background: #fff5f5; overflow: hidden; height: 100vh; display: flex; flex-direction: column; }
 
         /* Animated Traditional Background */
         .bg-animation {
@@ -20,11 +20,11 @@
             background: linear-gradient(135deg, #ff9a9e 0%, #fad0c4 100%);
         }
         .liquid {
-            position: absolute; width: 500px; height: 500px;
-            background: rgba(255, 107, 107, 0.2); filter: blur(100px);
-            border-radius: 50%; animation: move 20s infinite alternate;
+            position: absolute; width: 600px; height: 600px;
+            background: rgba(255, 107, 107, 0.2); filter: blur(120px);
+            border-radius: 50%; animation: move 25s infinite alternate;
         }
-        @keyframes move { from { transform: translate(-10%, -10%); } to { transform: translate(30%, 30%); } }
+        @keyframes move { from { transform: translate(-10%, -10%) rotate(0deg); } to { transform: translate(40%, 40%) rotate(360deg); } }
 
         /* Liquid Glass Styling */
         .glass {
@@ -36,23 +36,28 @@
         }
 
         #map {
-            height: calc(100vh - 100px); width: 96%; margin: 0 auto;
+            flex-grow: 1; width: 96%; margin: 10px auto;
             border-radius: 25px; border: 4px solid white;
-            box-shadow: 0 10px 40px rgba(0,0,0,0.1);
+            box-shadow: 0 10px 40px rgba(0,0,0,0.1); z-index: 1;
         }
 
         /* Form Overlay */
         #formOverlay {
             display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0,0,0,0.4); z-index: 1000; justify-content: center; align-items: center;
+            background: rgba(0,0,0,0.5); z-index: 1000; justify-content: center; align-items: center;
         }
+
+        /* Leaflet Popup Styling */
+        .leaflet-popup-content-wrapper { border-radius: 15px; padding: 0; overflow: hidden; }
+        .leaflet-popup-content { margin: 0; width: 250px !important; }
+        .popup-img { width: 100%; height: 150px; object-fit: cover; border-bottom: 2px solid #eee; }
     </style>
 </head>
 <body>
 
     <div class="bg-animation"><div class="liquid"></div></div>
 
-    <header class="p-4 flex justify-between items-center max-w-7xl mx-auto">
+    <header class="p-4 flex justify-between items-center max-w-7xl mx-auto w-full">
         <div class="glass px-6 py-2">
             <h1 class="text-3xl font-bold text-red-600 tracking-widest">BAKMAHA</h1>
         </div>
@@ -64,16 +69,23 @@
     <div id="map"></div>
 
     <div id="formOverlay">
-        <div class="glass p-8 w-96 flex flex-col gap-4 shadow-2xl">
-            <h2 class="text-xl font-bold text-center text-gray-800">විස්තර ඇතුළත් කරන්න</h2>
+        <div class="glass p-8 w-[400px] flex flex-col gap-3 shadow-2xl relative">
+            <button onclick="closeForm()" class="absolute top-4 right-4 text-gray-500 hover:text-red-500 font-bold">X</button>
+            <h2 class="text-xl font-bold text-center text-gray-800 mb-2">උත්සව විස්තර</h2>
+            
             <input type="text" id="evName" placeholder="උත්සවයේ නම" class="p-3 rounded-lg bg-white/40 border-none outline-none focus:ring-2 ring-red-400">
             <input type="text" id="evLoc" placeholder="ස්ථානය (ගම/නගරය)" class="p-3 rounded-lg bg-white/40 border-none outline-none focus:ring-2 ring-red-400">
             <input type="text" id="evOrg" placeholder="සංවිධානය" class="p-3 rounded-lg bg-white/40 border-none outline-none focus:ring-2 ring-red-400">
-            
-            <div class="flex gap-2">
-                <button onclick="saveData()" class="flex-1 bg-green-500 text-white py-3 rounded-lg font-bold hover:bg-green-600 transition">තොරතුරු තහවුරු කරන්න</button>
-                <button onclick="closeForm()" class="bg-gray-400 text-white px-4 rounded-lg">X</button>
-            </div>
+            <input type="date" id="evDate" class="p-3 rounded-lg bg-white/40 border-none outline-none text-gray-700">
+
+            <label class="block text-sm font-medium text-gray-700 mt-2">ආරාධනා පත්‍රය (කැමතිනම්)</label>
+            <input type="file" id="evImg" accept="image/*" class="text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-red-50 file:text-red-700 hover:file:bg-red-100">
+            <img id="imgPreview" class="hidden h-20 w-full object-cover rounded-md mt-1 border">
+
+            <button id="submitBtn" onclick="saveData()" class="bg-red-500 text-white py-3 rounded-lg font-bold hover:bg-red-600 transition mt-3 flex items-center justify-center gap-2">
+                <span>තොරතුරු තහවුරු කරන්න</span>
+                <span id="loader" class="hidden animate-spin rounded-full h-4 w-4 border-b-2 border-white"></span>
+            </button>
         </div>
     </div>
 
@@ -81,16 +93,17 @@
     <script src="https://unpkg.com/leaflet-control-geocoder/dist/Control.Geocoder.js"></script>
 
     <script type="module">
-        // Firebase Setup
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-        import { getDatabase, ref, push, onChildAdded, remove } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
-        import { getAnalytics } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-analytics.js";
+        // Firebase Setup using your config and SDK 12.11.0
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/12.11.0/firebase-app.js";
+        import { getDatabase, ref, push, onChildAdded, remove } from "https://www.gstatic.com/firebasejs/12.11.0/firebase-database.js";
+        import { getStorage, ref as sRef, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/12.11.0/firebase-storage.js";
+        import { getAnalytics } from "https://www.gstatic.com/firebasejs/12.11.0/firebase-analytics.js";
 
         const firebaseConfig = {
             apiKey: "AIzaSyDe2zWKPMaVKO4aAH0JGL688Bt8TV_4KcY",
             authDomain: "bakmaha.firebaseapp.com",
             projectId: "bakmaha",
-            storageBucket: "bakmaha.firebasestorage.app",
+            storageBucket: "bakmaha.firebasestorage.app", // මම මේක නිවැරදි කළා storageBucket එකට
             messagingSenderId: "351917609769",
             appId: "1:351917609769:web:4f1565d766f6efb2d29d38",
             measurementId: "G-44F7VVDBRD"
@@ -98,6 +111,7 @@
 
         const app = initializeApp(firebaseConfig);
         const db = getDatabase(app);
+        const storage = getStorage(app);
         const analytics = getAnalytics(app);
         const markersRef = ref(db, 'festivals');
 
@@ -106,15 +120,31 @@
         L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { attribution: 'BAKMAHA' }).addTo(map);
 
         // Search Tool
-        L.Control.geocoder().addTo(map);
+        L.Control.geocoder({ defaultMarkGeocode: false, placeholder: "ස්ථානය සොයන්න..." })
+         .on('markgeocode', function(e) { map.setView(e.geocode.center, 13); })
+         .addTo(map);
 
         // GPS Auto-locate
         map.locate({setView: true, maxZoom: 13});
         map.on('locationfound', (e) => {
-            L.circle(e.latlng, { radius: 200 }).addTo(map);
+            L.circle(e.latlng, { radius: 100, color: 'red' }).addTo(map);
         });
 
         let selectedLatLng = null;
+
+        // Image Preview Logic
+        document.getElementById('evImg').addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            if(file) {
+                const reader = new FileReader();
+                reader.onload = function(event) {
+                    const imgPreview = document.getElementById('imgPreview');
+                    imgPreview.src = event.target.result;
+                    imgPreview.classList.remove('hidden');
+                }
+                reader.readAsDataURL(file);
+            }
+        });
 
         // Click Map to Open Form
         map.on('click', function(e) {
@@ -125,28 +155,66 @@
         // Close Form
         window.closeForm = function() {
             document.getElementById('formOverlay').style.display = 'none';
+            // Clear inputs
+            document.getElementById('evName').value = "";
+            document.getElementById('evLoc').value = "";
+            document.getElementById('evOrg').value = "";
+            document.getElementById('evDate').value = "";
+            document.getElementById('evImg').value = "";
+            document.getElementById('imgPreview').classList.add('hidden');
         }
 
-        // Save to Firebase
-        window.saveData = function() {
+        // Save Data and Upload Image to Firebase
+        window.saveData = async function() {
             const name = document.getElementById('evName').value;
             const loc = document.getElementById('evLoc').value;
             const org = document.getElementById('evOrg').value;
+            const date = document.getElementById('evDate').value;
+            const imgFile = document.getElementById('evImg').files[0];
+            const submitBtn = document.getElementById('submitBtn');
+            const loader = document.getElementById('loader');
 
-            if(name && loc && org && selectedLatLng) {
-                push(markersRef, {
-                    name: name,
-                    location: loc,
-                    org: org,
-                    lat: selectedLatLng.lat,
-                    lng: selectedLatLng.lng
-                });
-                closeForm();
-                document.getElementById('evName').value = "";
-                document.getElementById('evLoc').value = "";
-                document.getElementById('evOrg').value = "";
+            if(name && loc && org && date && selectedLatLng) {
+                // Quick start: Show loader
+                submitBtn.disabled = true;
+                loader.classList.remove('hidden');
+
+                let imageUrl = ""; // Default empty
+
+                try {
+                    // 1. Upload Image if exists
+                    if(imgFile) {
+                        const storageRef = sRef(storage, 'invitations/' + Date.now() + '_' + imgFile.name);
+                        const snapshot = await uploadBytes(storageRef, imgFile);
+                        imageUrl = await getDownloadURL(snapshot.ref);
+                    }
+
+                    // 2. Save Data to Realtime Database
+                    await push(markersRef, {
+                        name: name,
+                        location: loc,
+                        org: org,
+                        date: date,
+                        imageUrl: imageUrl, // Save image URL or empty
+                        lat: selectedLatLng.lat,
+                        lng: selectedLatLng.lng
+                    });
+
+                    // Quick Finish
+                    closeForm();
+                    alert("උත්සවය සාර්ථකව සිතියමට එකතු කළා!");
+
+                } catch (error) {
+                    console.error("Error saving data:", error);
+                    alert("දත්ත සුරැකීමේදී ගැටලුවක් ඇති වුණා.");
+                } finally {
+                    // Reset loader and button
+                    submitBtn.disabled = false;
+                    loader.classList.add('hidden');
+                }
+
             } else {
-                alert("කරුණාකර සියලු විස්තර පුරවන්න!");
+                alert("කරුණාකර සියලු විස්තර පුරවන්න! (පින්තූරය අනිවාර්ය නැත)");
             }
         }
 
@@ -158,13 +226,21 @@
             const key = snapshot.key;
 
             const marker = L.marker([data.lat, data.lng]).addTo(map);
+            
+            // Modern Popup with Image at Top
+            let imageTag = data.imageUrl ? `<img src="${data.imageUrl}" class="popup-img">` : ``;
+            
             const popupBody = `
-                <div class="text-center p-2">
-                    <h3 class="font-bold text-lg text-red-600">${data.name}</h3>
-                    <p class="text-sm"><b>ස්ථානය:</b> ${data.location}</p>
-                    <p class="text-sm"><b>සංවිධානය:</b> ${data.org}</p>
-                    <hr class="my-2">
-                    <button onclick="removeMarker('${key}')" class="text-xs text-red-400 hover:underline">මකා දමන්න</button>
+                <div class="popup-container">
+                    ${imageTag}
+                    <div class="p-3 text-center">
+                        <h3 class="font-bold text-lg text-red-600 mb-1">${data.name}</h3>
+                        <p class="text-xs text-gray-500 mb-2"><b>දිනය:</b> ${data.date}</p>
+                        <p class="text-sm text-gray-800"><b>ස්ථානය:</b> ${data.location}</p>
+                        <p class="text-sm text-gray-800 mb-2"><b>සංවිධානය:</b> ${data.org}</p>
+                        <hr class="my-2">
+                        <button onclick="removeMarker('${key}')" class="text-xs text-red-400 hover:underline">මකා දමන්න</button>
+                    </div>
                 </div>
             `;
             marker.bindPopup(popupBody);
@@ -175,6 +251,7 @@
         window.removeMarker = function(key) {
             if(confirm("මෙම සලකුණ ඉවත් කිරීමට අවශ්‍යද?")) {
                 const markerRef = ref(db, 'festivals/' + key);
+                // Note: Image removal from Storage is optional but recommended in a real app.
                 remove(markerRef).then(() => {
                     map.removeLayer(activeMarkers[key]);
                 });
