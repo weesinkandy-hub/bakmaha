@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>BAKMAHA - සජීවී අවුරුදු සිතියම</title>
+    <title>BAKMAHA - අවුරුදු උත්සව තොරතුරු</title>
     
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
@@ -11,72 +11,45 @@
 
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Abhaya+Libre:wght@400;700&display=swap');
-        body { font-family: 'Abhaya Libre', serif; margin: 0; background: #fff5f5; scroll-behavior: smooth; }
-
-        /* Animated Traditional Background */
-        .bg-animation {
-            position: fixed; width: 100vw; height: 100vh; z-index: -1;
-            background: linear-gradient(135deg, #ff9a9e 0%, #fad0c4 100%);
-        }
-        .liquid {
-            position: absolute; width: 500px; height: 500px;
-            background: rgba(255, 107, 107, 0.2); filter: blur(100px);
-            border-radius: 50%; animation: move 20s infinite alternate;
-        }
-        @keyframes move { from { transform: translate(-10%, -10%); } to { transform: translate(30%, 30%); } }
-
-        .glass {
-            background: rgba(255, 255, 255, 0.2);
-            backdrop-filter: blur(15px);
-            border: 1px solid rgba(255, 255, 255, 0.3);
-            border-radius: 20px;
-        }
-
-        #map { height: 450px; width: 100%; border-radius: 20px; border: 4px solid white; box-shadow: 0 10px 30px rgba(0,0,0,0.1); }
-        
-        #formOverlay {
-            display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0,0,0,0.4); z-index: 1000; justify-content: center; align-items: center;
-        }
+        body { font-family: 'Abhaya Libre', serif; background: #fff5f5; margin: 0; }
+        .glass { background: rgba(255, 255, 255, 0.3); backdrop-filter: blur(10px); border: 1px solid rgba(255, 255, 255, 0.4); border-radius: 20px; }
+        #map { height: 350px; width: 100%; border-radius: 20px; border: 3px solid white; box-shadow: 0 5px 15px rgba(0,0,0,0.1); }
+        .list-item { transition: 0.3s; cursor: pointer; }
+        .list-item:hover { transform: scale(1.02); background: rgba(255, 255, 255, 0.5); }
     </style>
 </head>
-<body>
+<body class="p-4 md:p-8">
 
-    <div class="bg-animation"><div class="liquid"></div></div>
-
-    <div class="max-w-6xl mx-auto p-4">
-        <header class="flex flex-col md:flex-row justify-between items-center mb-6 gap-4">
-            <div class="glass px-8 py-3">
-                <h1 class="text-4xl font-bold text-red-600 tracking-tighter">BAKMAHA</h1>
-            </div>
-            <div class="glass px-4 py-2 flex items-center gap-2">
-                <input type="text" id="listSearch" onkeyup="searchList()" placeholder="උත්සවයක් සොයන්න..." class="bg-transparent border-none outline-none text-gray-800 placeholder-gray-600 w-64">
-                <span class="text-gray-500">🔍</span>
-            </div>
-        </header>
-
-        <div class="mb-8">
-            <div id="map"></div>
-            <p class="text-center mt-2 text-red-700 font-bold">සිතියම මත Click කර අලුත් උත්සවයක් ඇතුළත් කරන්න 📍</p>
+    <div class="max-w-4xl mx-auto flex flex-col items-center gap-4 mb-8">
+        <div class="w-32 h-32 glass flex items-center justify-center overflow-hidden border-2 border-red-400">
+            <span class="text-red-500 font-bold">LOGO HERE</span>
         </div>
-
-        <h2 class="text-2xl font-bold text-gray-800 mb-4 px-2">ළඟම ඇති උත්සව ලැයිස්තුව</h2>
-        <div id="eventList" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 pb-20">
-            </div>
+        <h1 class="text-4xl font-bold text-red-700 tracking-widest">BAKMAHA</h1>
     </div>
 
-    <div id="formOverlay">
-        <div class="glass p-8 w-[400px] flex flex-col gap-3 shadow-2xl relative">
-            <h2 class="text-xl font-bold text-center text-gray-800 mb-2">උත්සව විස්තර ඇතුළත් කරන්න</h2>
-            <input type="text" id="evName" placeholder="උත්සවයේ නම" class="p-3 rounded-lg bg-white/50 outline-none">
-            <input type="text" id="evLoc" placeholder="ස්ථානය (ගම/නගරය)" class="p-3 rounded-lg bg-white/50 outline-none">
-            <input type="text" id="evOrg" placeholder="සංවිධානය" class="p-3 rounded-lg bg-white/50 outline-none">
-            <input type="date" id="evDate" class="p-3 rounded-lg bg-white/50 outline-none">
-            <input type="file" id="evImg" accept="image/*" class="text-xs">
-            
-            <div class="flex gap-2 mt-2">
-                <button onclick="saveData()" id="submitBtn" class="flex-1 bg-red-500 text-white py-3 rounded-lg font-bold">තොරතුරු තහවුරු කරන්න</button>
-                <button onclick="closeForm()" class="bg-gray-400 text-white px-4 rounded-lg">X</button>
+    <div class="max-w-4xl mx-auto grid grid-cols-1 gap-6">
+        
+        <div class="glass p-4">
+            <h2 class="text-lg font-bold mb-2 text-gray-700">සිතියම (GPS/Search)</h2>
+            <div id="map"></div>
+        </div>
+
+        <div class="glass p-6">
+            <h2 class="text-xl font-bold mb-4 text-red-600">නව උත්සවයක් එක් කරන්න</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <input type="text" id="evName" placeholder="උත්සවයේ නම" class="p-3 rounded-lg bg-white/60 outline-none border border-red-200">
+                <input type="text" id="evLoc" placeholder="ස්ථානය (ගම/නගරය)" class="p-3 rounded-lg bg-white/60 outline-none border border-red-200">
+                <input type="text" id="evOrg" placeholder="සංවිධානය" class="p-3 rounded-lg bg-white/60 outline-none border border-red-200">
+                <input type="date" id="evDate" class="p-3 rounded-lg bg-white/60 outline-none border border-red-200">
+            </div>
+            <p class="text-xs mt-2 text-gray-500 italic">*පළමුව සිතියම මත ස්ථානය ක්ලික් කර පසුව තහවුරු කරන්න.</p>
+            <button onclick="saveData()" class="w-full mt-4 bg-red-600 text-white py-3 rounded-xl font-bold shadow-lg hover:bg-red-700 transition">තොරතුරු තහවුරු කරන්න</button>
+        </div>
+
+        <div class="glass p-6 mb-10">
+            <h2 class="text-xl font-bold mb-4 text-gray-800">ලියාපදිංචි උත්සව ලැයිස්තුව</h2>
+            <div id="festivalList" class="flex flex-col gap-3">
+                <p id="noData" class="text-gray-500 text-center">තවම උත්සව ඇතුළත් කර නැත.</p>
             </div>
         </div>
     </div>
@@ -87,7 +60,6 @@
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/12.11.0/firebase-app.js";
         import { getDatabase, ref, push, onChildAdded, remove, onChildRemoved } from "https://www.gstatic.com/firebasejs/12.11.0/firebase-database.js";
-        import { getStorage, ref as sRef, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/12.11.0/firebase-storage.js";
 
         const firebaseConfig = {
             apiKey: "AIzaSyDe2zWKPMaVKO4aAH0JGL688Bt8TV_4KcY",
@@ -101,111 +73,96 @@
 
         const app = initializeApp(firebaseConfig);
         const db = getDatabase(app);
-        const storage = getStorage(app);
         const markersRef = ref(db, 'festivals');
 
-        // Map Init
-        var map = L.map('map').setView([7.8731, 80.7718], 8);
+        // Map Setup
+        var map = L.map('map').setView([7.8731, 80.7718], 7);
         L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
 
-        // Search Tool & GPS
+        // Search & GPS
         L.Control.geocoder().addTo(map);
-        map.locate({setView: true, maxZoom: 13});
+        map.locate({setView: true, maxZoom: 10});
 
         let selectedLatLng = null;
         let activeMarkers = {};
 
-        // Click to Open Form
+        // සිතියම ක්ලික් කර ස්ථානය තෝරා ගැනීම
         map.on('click', (e) => {
             selectedLatLng = e.latlng;
-            document.getElementById('formOverlay').style.display = 'flex';
+            L.popup().setLatLng(e.latlng).setContent("ස්ථානය තෝරාගත්තා! දැන් විස්තර පුරවන්න.").openOn(map);
         });
 
-        window.closeForm = () => { document.getElementById('formOverlay').style.display = 'none'; }
-
         // Save Data
-        window.saveData = async () => {
-            const btn = document.getElementById('submitBtn');
+        window.saveData = function() {
             const name = document.getElementById('evName').value;
             const loc = document.getElementById('evLoc').value;
             const org = document.getElementById('evOrg').value;
             const date = document.getElementById('evDate').value;
-            const imgFile = document.getElementById('evImg').files[0];
 
-            if(!name || !loc || !selectedLatLng) return alert("කරුණාකර විස්තර පුරවන්න");
-
-            btn.disabled = true; btn.innerText = "මොහොතක් ඉන්න...";
-
-            let url = "";
-            if(imgFile) {
-                const storageRef = sRef(storage, 'bakmaha/' + Date.now());
-                const snap = await uploadBytes(storageRef, imgFile);
-                url = await getDownloadURL(snap.ref);
+            if(name && loc && org && date && selectedLatLng) {
+                push(markersRef, {
+                    name, location: loc, org, date,
+                    lat: selectedLatLng.lat, lng: selectedLatLng.lng
+                });
+                alert("සාර්ථකව ඇතුළත් කළා!");
+                // Clear fields
+                document.getElementById('evName').value = "";
+                document.getElementById('evLoc').value = "";
+                document.getElementById('evOrg').value = "";
+            } else {
+                alert("කරුණාකර සිතියම මත ස්ථානයක් තෝරා සියලු විස්තර පුරවන්න.");
             }
-
-            await push(markersRef, { name, loc, org, date, lat: selectedLatLng.lat, lng: selectedLatLng.lng, url });
-            
-            btn.disabled = false; btn.innerText = "තොරතුරු තහවුරු කරන්න";
-            closeForm();
         };
 
-        // UI Rendering (Map + List)
-        onChildAdded(markersRef, (snap) => {
-            const data = snap.val();
-            const key = snap.key;
+        // ලැයිස්තුවට සහ සිතියමට දත්ත එක් කිරීම (Real-time)
+        onChildAdded(markersRef, (snapshot) => {
+            const data = snapshot.val();
+            const key = snapshot.key;
+            document.getElementById('noData').style.display = 'none';
 
-            // 1. Add Marker to Map
-            const marker = L.marker([data.lat, data.lng]).addTo(map);
-            marker.bindPopup(`<b>${data.name}</b><br>${data.loc}`);
+            // සිතියමට Marker එකක් දැමීම
+            const marker = L.marker([data.lat, data.lng]).addTo(map)
+                .bindPopup(`<b>${data.name}</b><br>${data.location}`);
             activeMarkers[key] = marker;
 
-            // 2. Add Card to List
-            const list = document.getElementById('eventList');
-            const card = document.createElement('div');
-            card.id = "card-" + key;
-            card.className = "glass p-4 flex flex-col gap-2 transition hover:scale-105 cursor-pointer event-card";
-            card.innerHTML = `
-                ${data.url ? `<img src="${data.url}" class="h-40 w-full object-cover rounded-lg">` : ''}
-                <h3 class="font-bold text-xl text-red-600">${data.name}</h3>
-                <p class="text-sm">📍 ${data.loc} | 🏢 ${data.org}</p>
-                <p class="text-xs text-gray-500">📅 දිනය: ${data.date}</p>
-                <div class="flex justify-between mt-2">
-                    <button onclick="focusOnMap(${data.lat}, ${data.lng}, '${key}')" class="bg-orange-500 text-white px-3 py-1 rounded-md text-sm">සිතියමේ බලන්න</button>
-                    <button onclick="deleteEvent('${key}')" class="text-red-500 font-bold">මකන්න</button>
+            // ලැයිස්තුවට එක් කිරීම
+            const listContainer = document.getElementById('festivalList');
+            const item = document.createElement('div');
+            item.id = `item-${key}`;
+            item.className = "list-item glass p-4 flex justify-between items-center border-l-4 border-red-500 shadow-sm";
+            item.innerHTML = `
+                <div onclick="focusMap(${data.lat}, ${data.lng}, '${key}')" class="flex-1">
+                    <h3 class="font-bold text-red-700">${data.name}</h3>
+                    <p class="text-sm text-gray-600">${data.location} | ${data.date}</p>
+                    <p class="text-xs text-gray-500">සංවිධානය: ${data.org}</p>
                 </div>
+                <button onclick="deleteEntry('${key}')" class="bg-red-100 text-red-600 px-3 py-1 rounded-lg text-xs font-bold hover:bg-red-200">Delete</button>
             `;
-            list.prepend(card);
+            listContainer.prepend(item);
         });
 
-        // Focus Map Function
-        window.focusOnMap = (lat, lng, key) => {
-            map.setView([lat, lng], 15);
+        // List එක ක්ලික් කළ විට සිතියම එතැනට යාම
+        window.focusMap = function(lat, lng, key) {
+            map.setView([lat, lng], 14);
             activeMarkers[key].openPopup();
             window.scrollTo({ top: 0, behavior: 'smooth' });
         };
 
         // Delete Function
-        window.deleteEvent = (key) => {
-            if(confirm("මෙම උත්සවය ඉවත් කිරීමට අවශ්‍යද?")) {
+        window.deleteEntry = function(key) {
+            if(confirm("මෙම උත්සවය ඉවත් කරනවාද?")) {
                 remove(ref(db, 'festivals/' + key));
             }
         };
 
-        onChildRemoved(markersRef, (snap) => {
-            const key = snap.key;
-            if(activeMarkers[key]) map.removeLayer(activeMarkers[key]);
-            const card = document.getElementById("card-" + key);
-            if(card) card.remove();
-        });
-
-        // Search List
-        window.searchList = () => {
-            let input = document.getElementById('listSearch').value.toLowerCase();
-            let cards = document.getElementsByClassName('event-card');
-            for (let i = 0; i < cards.length; i++) {
-                cards[i].style.display = cards[i].innerText.toLowerCase().includes(input) ? "flex" : "none";
+        onChildRemoved(markersRef, (snapshot) => {
+            const key = snapshot.key;
+            if (activeMarkers[key]) {
+                map.removeLayer(activeMarkers[key]);
+                delete activeMarkers[key];
             }
-        };
+            document.getElementById(`item-${key}`).remove();
+        });
     </script>
 </body>
 </html>
