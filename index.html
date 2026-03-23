@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>BAKMAHA - අවුරුදු උත්සව තොරතුරු</title>
+    <title>BAKMAHA - අවුරුදු උත්සව නාමාවලිය</title>
     
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
@@ -11,47 +11,59 @@
 
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Abhaya+Libre:wght@400;700&display=swap');
-        body { font-family: 'Abhaya Libre', serif; background: #fff5f5; margin: 0; }
-        .glass { background: rgba(255, 255, 255, 0.3); backdrop-filter: blur(10px); border: 1px solid rgba(255, 255, 255, 0.4); border-radius: 20px; }
-        #map { height: 350px; width: 100%; border-radius: 20px; border: 3px solid white; box-shadow: 0 5px 15px rgba(0,0,0,0.1); }
-        .list-item { transition: 0.3s; cursor: pointer; }
-        .list-item:hover { transform: scale(1.02); background: rgba(255, 255, 255, 0.5); }
+        body { font-family: 'Abhaya Libre', serif; background: #fff5f5; scroll-behavior: smooth; }
+        
+        .glass {
+            background: rgba(255, 255, 255, 0.4);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.5);
+            border-radius: 15px;
+        }
+
+        #map { height: 350px; width: 100%; border-radius: 15px; border: 3px solid white; margin-bottom: 20px; }
+        
+        .festival-card {
+            transition: transform 0.2s;
+            animation: slideIn 0.3s ease-out;
+        }
+        @keyframes slideIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
     </style>
 </head>
 <body class="p-4 md:p-8">
 
-    <div class="max-w-4xl mx-auto flex flex-col items-center gap-4 mb-8">
-        <div class="w-32 h-32 glass flex items-center justify-center overflow-hidden border-2 border-red-400">
-            <span class="text-red-500 font-bold">LOGO HERE</span>
-        </div>
-        <h1 class="text-4xl font-bold text-red-700 tracking-widest">BAKMAHA</h1>
+    <div class="max-w-4xl mx-auto flex flex-col items-center mb-8">
+        <img src="data:image/jpeg;base64,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" alt="BAKMAHA LOGO" class="w-32 h-32 object-contain mb-4 rounded-full shadow-lg bg-white">
+        <h1 class="text-4xl font-bold text-red-600">BAKMAHA</h1>
+        <p class="text-gray-600 italic">සජීවී අලුත් අවුරුදු තොරතුරු පද්ධතිය</p>
     </div>
 
     <div class="max-w-4xl mx-auto grid grid-cols-1 gap-6">
         
-        <div class="glass p-4">
-            <h2 class="text-lg font-bold mb-2 text-gray-700">සිතියම (GPS/Search)</h2>
+        <div class="glass p-4 shadow-sm">
             <div id="map"></div>
+            <p class="text-xs text-center text-gray-500">සිතියම මත ක්ලික් කර ස්ථානය තෝරන්න</p>
         </div>
 
-        <div class="glass p-6">
-            <h2 class="text-xl font-bold mb-4 text-red-600">නව උත්සවයක් එක් කරන්න</h2>
+        <div class="glass p-6 shadow-md border-t-4 border-red-500">
+            <h2 class="text-xl font-bold mb-4 text-gray-800">නව උත්සවයක් එක් කරන්න</h2>
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <input type="text" id="evName" placeholder="උත්සවයේ නම" class="p-3 rounded-lg bg-white/60 outline-none border border-red-200">
-                <input type="text" id="evLoc" placeholder="ස්ථානය (ගම/නගරය)" class="p-3 rounded-lg bg-white/60 outline-none border border-red-200">
-                <input type="text" id="evOrg" placeholder="සංවිධානය" class="p-3 rounded-lg bg-white/60 outline-none border border-red-200">
-                <input type="date" id="evDate" class="p-3 rounded-lg bg-white/60 outline-none border border-red-200">
+                <input type="text" id="evName" placeholder="උත්සවයේ නම" class="p-3 rounded-lg border focus:ring-2 ring-red-300 outline-none">
+                <input type="text" id="evLoc" placeholder="ස්ථානය (ගම/නගරය)" class="p-3 rounded-lg border focus:ring-2 ring-red-300 outline-none">
+                <input type="text" id="evOrg" placeholder="සංවිධානය" class="p-3 rounded-lg border focus:ring-2 ring-red-300 outline-none">
+                <input type="date" id="evDate" class="p-3 rounded-lg border outline-none">
             </div>
-            <p class="text-xs mt-2 text-gray-500 italic">*පළමුව සිතියම මත ස්ථානය ක්ලික් කර පසුව තහවුරු කරන්න.</p>
-            <button onclick="saveData()" class="w-full mt-4 bg-red-600 text-white py-3 rounded-xl font-bold shadow-lg hover:bg-red-700 transition">තොරතුරු තහවුරු කරන්න</button>
+            <button onclick="saveData()" id="submitBtn" class="w-full mt-4 bg-red-600 text-white py-3 rounded-lg font-bold hover:bg-red-700 transition duration-300 shadow-lg">
+                තොරතුරු තහවුරු කරන්න (Quick Save)
+            </button>
         </div>
 
-        <div class="glass p-6 mb-10">
-            <h2 class="text-xl font-bold mb-4 text-gray-800">ලියාපදිංචි උත්සව ලැයිස්තුව</h2>
-            <div id="festivalList" class="flex flex-col gap-3">
-                <p id="noData" class="text-gray-500 text-center">තවම උත්සව ඇතුළත් කර නැත.</p>
+        <div class="mt-4">
+            <h2 class="text-2xl font-bold mb-4 text-gray-800 border-b-2 border-red-200 pb-2">ඉදිරි උත්සව ලැයිස්තුව</h2>
+            <div id="festivalList" class="grid grid-cols-1 gap-4">
+                <p id="emptyMsg" class="text-gray-400 italic text-center py-10">තවමත් උත්සව ඇතුළත් කර නොමැත...</p>
             </div>
         </div>
+
     </div>
 
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
@@ -76,20 +88,19 @@
         const markersRef = ref(db, 'festivals');
 
         // Map Setup
-        var map = L.map('map').setView([7.8731, 80.7718], 7);
+        var map = L.map('map').setView([7.8731, 80.7718], 8);
         L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
+        L.Control.geocoder({ placeholder: "සිතියමේ ස්ථානය සොයන්න..." }).addTo(map);
+        map.locate({setView: true, maxZoom: 13});
 
-        // Search & GPS
-        L.Control.geocoder().addTo(map);
-        map.locate({setView: true, maxZoom: 10});
+        let selectedPos = null;
+        let tempMarker = null;
 
-        let selectedLatLng = null;
-        let activeMarkers = {};
-
-        // සිතියම ක්ලික් කර ස්ථානය තෝරා ගැනීම
+        // Click on Map
         map.on('click', (e) => {
-            selectedLatLng = e.latlng;
-            L.popup().setLatLng(e.latlng).setContent("ස්ථානය තෝරාගත්තා! දැන් විස්තර පුරවන්න.").openOn(map);
+            selectedPos = e.latlng;
+            if(tempMarker) map.removeLayer(tempMarker);
+            tempMarker = L.marker(selectedPos).addTo(map).bindPopup("මෙහි උත්සවය පවත්වයි").openPopup();
         });
 
         // Save Data
@@ -99,70 +110,77 @@
             const org = document.getElementById('evOrg').value;
             const date = document.getElementById('evDate').value;
 
-            if(name && loc && org && date && selectedLatLng) {
+            if(name && loc && org && date && selectedPos) {
                 push(markersRef, {
                     name, location: loc, org, date,
-                    lat: selectedLatLng.lat, lng: selectedLatLng.lng
+                    lat: selectedPos.lat, lng: selectedPos.lng
                 });
-                alert("සාර්ථකව ඇතුළත් කළා!");
-                // Clear fields
+                // Reset inputs
                 document.getElementById('evName').value = "";
                 document.getElementById('evLoc').value = "";
                 document.getElementById('evOrg').value = "";
+                document.getElementById('evDate').value = "";
+                if(tempMarker) map.removeLayer(tempMarker);
+                alert("සාර්ථකව එකතු කළා!");
             } else {
                 alert("කරුණාකර සිතියම මත ස්ථානයක් තෝරා සියලු විස්තර පුරවන්න.");
             }
         };
 
-        // ලැයිස්තුවට සහ සිතියමට දත්ත එක් කිරීම (Real-time)
-        onChildAdded(markersRef, (snapshot) => {
-            const data = snapshot.val();
-            const key = snapshot.key;
-            document.getElementById('noData').style.display = 'none';
+        // UI List Management
+        const listDiv = document.getElementById('festivalList');
+        const emptyMsg = document.getElementById('emptyMsg');
+        let activeMarkers = {};
 
-            // සිතියමට Marker එකක් දැමීම
+        onChildAdded(markersRef, (snap) => {
+            emptyMsg.style.display = 'none';
+            const data = snap.val();
+            const id = snap.key;
+
+            // සිතියමට මාකර් එක එක් කිරීම
             const marker = L.marker([data.lat, data.lng]).addTo(map)
                 .bindPopup(`<b>${data.name}</b><br>${data.location}`);
-            activeMarkers[key] = marker;
+            activeMarkers[id] = marker;
 
-            // ලැයිස්තුවට එක් කිරීම
-            const listContainer = document.getElementById('festivalList');
-            const item = document.createElement('div');
-            item.id = `item-${key}`;
-            item.className = "list-item glass p-4 flex justify-between items-center border-l-4 border-red-500 shadow-sm";
-            item.innerHTML = `
-                <div onclick="focusMap(${data.lat}, ${data.lng}, '${key}')" class="flex-1">
-                    <h3 class="font-bold text-red-700">${data.name}</h3>
-                    <p class="text-sm text-gray-600">${data.location} | ${data.date}</p>
+            // ලැයිස්තුවට Card එකක් එක් කිරීම
+            const card = document.createElement('div');
+            card.id = `card-${id}`;
+            card.className = "festival-card glass p-4 flex justify-between items-center shadow-sm border-l-4 border-red-500";
+            card.innerHTML = `
+                <div>
+                    <h3 class="font-bold text-lg text-red-700">${data.name}</h3>
+                    <p class="text-sm text-gray-600">📍 ${data.location} | 📅 ${data.date}</p>
                     <p class="text-xs text-gray-500">සංවිධානය: ${data.org}</p>
                 </div>
-                <button onclick="deleteEntry('${key}')" class="bg-red-100 text-red-600 px-3 py-1 rounded-lg text-xs font-bold hover:bg-red-200">Delete</button>
+                <div class="flex gap-2">
+                    <button onclick="focusMap(${data.lat}, ${data.lng})" class="bg-blue-500 text-white px-3 py-1 rounded text-sm">සිතියම බලන්න</button>
+                    <button onclick="deleteEntry('${id}')" class="bg-red-100 text-red-600 px-3 py-1 rounded text-sm hover:bg-red-600 hover:text-white transition">මකන්න</button>
+                </div>
             `;
-            listContainer.prepend(item);
+            listDiv.prepend(card);
         });
 
-        // List එක ක්ලික් කළ විට සිතියම එතැනට යාම
-        window.focusMap = function(lat, lng, key) {
-            map.setView([lat, lng], 14);
-            activeMarkers[key].openPopup();
-            window.scrollTo({ top: 0, behavior: 'smooth' });
+        // Focus Map Function
+        window.focusMap = function(lat, lng) {
+            map.setView([lat, lng], 15);
+            window.scrollTo(0,0);
         };
 
         // Delete Function
-        window.deleteEntry = function(key) {
-            if(confirm("මෙම උත්සවය ඉවත් කරනවාද?")) {
-                remove(ref(db, 'festivals/' + key));
+        window.deleteEntry = function(id) {
+            if(confirm("මෙම උත්සවය මකා දැමීමට ඔබට සහතිකද?")) {
+                remove(ref(db, 'festivals/' + id));
             }
         };
 
-        onChildRemoved(markersRef, (snapshot) => {
-            const key = snapshot.key;
-            if (activeMarkers[key]) {
-                map.removeLayer(activeMarkers[key]);
-                delete activeMarkers[key];
-            }
-            document.getElementById(`item-${key}`).remove();
+        onChildRemoved(markersRef, (snap) => {
+            const id = snap.key;
+            const card = document.getElementById(`card-${id}`);
+            if(card) card.remove();
+            if(activeMarkers[id]) map.removeLayer(activeMarkers[id]);
+            if(listDiv.children.length === 1) emptyMsg.style.display = 'block';
         });
+
     </script>
 </body>
 </html>
